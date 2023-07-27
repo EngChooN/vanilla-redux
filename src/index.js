@@ -4,7 +4,7 @@ const plus = document.getElementById("plus");
 const minus = document.getElementById("minus");
 const number = document.querySelector("span");
 
-// vanilla js example
+// -------------------- vanilla js example --------------------
 // let count = 0;
 
 // const updateText = () => {
@@ -28,7 +28,7 @@ const number = document.querySelector("span");
 // plus.addEventListener("click", clickPlus);
 // minus.addEventListener("click", clickMinus);
 
-// pure redux example
+// -------------------- pure redux example --------------------
 // const countModifier = (state = 0, action) => {
 //     console.log("action", action);
 //     // plus action
@@ -64,8 +64,7 @@ const number = document.querySelector("span");
 
 // number.innerText = countStore.getState(); // first paint count 0
 
-// refactor redux code
-
+// -------------------- refactor redux code --------------------
 /*
 ✅ reducer : 현재 상태의 application과 함께 불려지는 function (+ with action)
 return하는 것은 application의 state가 됨
@@ -93,12 +92,12 @@ const countModifier = (state = 0, action) => {
 
     switch (action.type) {
         // plus action
-        case "plus": {
+        case PLUS: {
             console.log("plus");
             return state + 1;
         }
         // minus action
-        case "minus": {
+        case MINUS: {
             console.log("minus");
             return state - 1;
         }
@@ -114,7 +113,11 @@ const clickPlus = () => {
 };
 
 const clickMinus = () => {
-    countStore.dispatch({ type: MINUS });
+    if (countStore.getState() <= 0) {
+        return;
+    } else {
+        countStore.dispatch({ type: MINUS });
+    }
 };
 
 // subscribe: if change state value, run this function
@@ -126,3 +129,82 @@ plus.addEventListener("click", clickPlus);
 minus.addEventListener("click", clickMinus);
 
 number.innerText = countStore.getState(); // first paint count 0
+
+// -------------------- try use vanilla js, make to do list --------------------
+// const form = document.querySelector("form");
+// const input = document.querySelector("input");
+// const ul = document.querySelector("ul");
+
+// const createToDo = (toDo) => {
+//     const li = document.createElement("li");
+//     li.innerText = toDo;
+//     ul.appendChild(li);
+// };
+
+// const onSubmit = (e) => {
+//     e.preventDefault();
+//     const toDo = input.value;
+//     input.value = "";
+//     createToDo(toDo);
+// };
+
+// form.addEventListener("submit", onSubmit);
+
+// -------------------- try use pure redux, make to do list --------------------
+const form = document.querySelector("form");
+const input = document.querySelector("input");
+const ul = document.querySelector("ul");
+
+const addTodo = (toDo) => {
+    todoStore.dispatch({ type: ADD, content: toDo, id: Date.now() });
+};
+
+const deleteTodo = (e) => {
+    const id = parseInt(e.target.parentNode.id);
+    todoStore.dispatch({ type: Delete, id: id });
+};
+
+const onSubmit = (e) => {
+    e.preventDefault();
+    const toDo = input.value;
+    input.value = "";
+    addTodo(toDo);
+};
+
+const ADD = "add";
+const Delete = "delete";
+
+const todoReducer = (todo = [], action) => {
+    console.log(action);
+    console.log(todo);
+    switch (action.type) {
+        case ADD:
+            const newTodo = { content: action.content, id: Date.now() };
+            return [newTodo, ...todo];
+        case Delete: {
+            const deletedTodo = todo.filter((el) => el.id !== action.id);
+            return deletedTodo;
+        }
+        default:
+            return todo;
+    }
+};
+
+const todoStore = legacy_createStore(todoReducer);
+
+todoStore.subscribe(() => {
+    const todoList = todoStore.getState();
+    ul.innerHTML = "";
+    todoList.forEach((el) => {
+        const li = document.createElement("li");
+        const button = document.createElement("button");
+        button.innerText = "del";
+        button.addEventListener("click", deleteTodo);
+        li.id = el.id;
+        li.innerText = el.content;
+        li.appendChild(button);
+        ul.appendChild(li);
+    });
+});
+
+form.addEventListener("submit", onSubmit);
