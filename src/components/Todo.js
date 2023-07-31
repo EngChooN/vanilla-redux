@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { delTodo } from "../store";
+import { remove } from "../store";
 import { Link } from "react-router-dom";
 
 function Todo({ text, id, onClickDel }) {
@@ -15,7 +15,7 @@ function Todo({ text, id, onClickDel }) {
 const mapDispatchToProps = (dispatch, ownPros) => {
     // ownPros에는 모든 정보가 담겨있다. {text:"", id:""}
     return {
-        onClickDel: () => dispatch(delTodo(ownPros.id)),
+        onClickDel: () => dispatch(remove(ownPros.id)),
     };
 };
 
